@@ -1,0 +1,25 @@
+{
+  "terminals": [
+    "iTerm2",
+    "Terminal",
+    "Apple_Terminal",
+    "Code",
+    "Cursor",
+    "WindowsTerminal",
+    "powershell",
+    "cmd",
+    "ConEmu",
+    "gnome-terminal",
+    "konsole",
+    "Alacritty",
+    "kitty",
+    "tmux",
+    "ghostty"
+  ],
+  "default_interval": 15,
+  "max_repeats": 20,
+  "events": {
+    "Stop": { "enabled": true, "sound": "done.wav", "interval": 15 },
+    "Notification": { "enabled": true, "sound": "question.wav", "interval": 15 }
+  }
+}
