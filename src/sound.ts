@@ -37,7 +37,7 @@ export function playSound(file: string): void {
   const player = pickLinuxPlayer();
   if (player === null) {
     process.stderr.write(
-      "[claude-notifier] no audio player found (tried paplay, aplay, ffplay, play)\n",
+      "[claude-alerter] no audio player found (tried paplay, aplay, ffplay, play)\n",
     );
     return;
   }

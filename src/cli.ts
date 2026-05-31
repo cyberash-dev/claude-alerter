@@ -166,7 +166,7 @@ function runDoctor(): void {
 function usage(): void {
   process.stdout.write(
     [
-      "claude-notifier",
+      "claude-alerter",
       "",
       "Usage:",
       "  cli install [--dry-run] [--config <path>] [--logitech-haptic]",

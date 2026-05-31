@@ -1,16 +1,16 @@
 {
-  "name": "claude-notifier",
+  "name": "claude-alerter",
   "version": "1.0.0",
   "description": "Cross-platform notifier for Claude Code hooks: sound and optional haptic alerts that repeat until the terminal is focused.",
   "license": "MIT",
   "author": "cyberash <cyberash-dev@yandex.com>",
-  "homepage": "https://github.com/cyberash-dev/claude-notifier#readme",
+  "homepage": "https://github.com/cyberash-dev/claude-alerter#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cyberash-dev/claude-notifier.git"
+    "url": "git+https://github.com/cyberash-dev/claude-alerter.git"
   },
   "bugs": {
-    "url": "https://github.com/cyberash-dev/claude-notifier/issues"
+    "url": "https://github.com/cyberash-dev/claude-alerter/issues"
   },
   "keywords": [
     "claude",
@@ -25,7 +25,7 @@
   ],
   "type": "commonjs",
   "bin": {
-    "claude-notifier": "dist/src/cli.js"
+    "claude-alerter": "dist/src/cli.js"
   },
   "files": [
     "dist/",

@@ -1,4 +1,4 @@
-# claude-notifier
+# claude-alerter
 
 Cross-platform sound notifier for [Claude Code](https://claude.com/claude-code)
 hooks. Plays a sound — on repeat until your terminal is focused — when Claude
@@ -19,7 +19,7 @@ finishes a turn or needs your input. Works on macOS, Windows, and Linux.
   - Linux: one of `paplay`, `aplay`, `ffplay`, or `play` (sox). For the loop to
     stop on focus under X11, also `xdotool` + `xprop`.
 
-Run `claude-notifier doctor` (or `node dist/src/cli.js doctor`) to check what
+Run `claude-alerter doctor` (or `node dist/src/cli.js doctor`) to check what
 your OS has and, on Linux, print the exact install command for your distro
 (apt/dnf/pacman/zypper/apk). `install` prints the same report.
 
@@ -28,21 +28,21 @@ your OS has and, on Linux, print the exact install command for your distro
 From npm (no clone needed):
 
 ```sh
-npx claude-notifier install
+npx claude-alerter install
 ```
 
-Or install globally and run the `claude-notifier` command directly:
+Or install globally and run the `claude-alerter` command directly:
 
 ```sh
-npm install -g claude-notifier
-claude-notifier install
+npm install -g claude-alerter
+claude-alerter install
 ```
 
 From source:
 
 ```sh
-git clone https://github.com/cyberash-dev/claude-notifier.git
-cd claude-notifier
+git clone https://github.com/cyberash-dev/claude-alerter.git
+cd claude-alerter
 npm install
 npm run build
 node dist/src/cli.js install

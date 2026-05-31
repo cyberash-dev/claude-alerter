@@ -141,7 +141,7 @@ export function test(eventName: string): void {
   const config = loadInstalledConfig();
   const ev: EventConfig | undefined = config.events[eventName];
   if (ev === undefined) {
-    throw new Error(`[claude-notifier] no event "${eventName}" in config`);
+    throw new Error(`[claude-alerter] no event "${eventName}" in config`);
   }
   if (ev.haptic === true) {
     triggerHaptic(eventName);

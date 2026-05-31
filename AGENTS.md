@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for AI agents and human contributors working on **claude-notifier**.
+Guidance for AI agents and human contributors working on **claude-alerter**.
 Read this before changing code. User-facing usage lives in [README.md](./README.md);
 this file is about *how the project is built and why*.
 
@@ -199,7 +199,7 @@ node ~/.claude/notifier/cli.js test Stop              # one chime
 GUI app is actually frontmost, which changes as you click around. To test the
 loop deterministically, set `terminals` to match the app that is frontmost
 *while the test runs* (your terminal, if commands run there), start
-`node cli.js _loop <Event>`, and confirm the pidfile (`$TMPDIR/claude-notifier.pid`)
+`node cli.js _loop <Event>`, and confirm the pidfile (`$TMPDIR/claude-alerter.pid`)
 disappears within ~1-2s. Restore config afterward.
 
 ## Conventions

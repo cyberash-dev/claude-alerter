@@ -43,7 +43,7 @@ export const DEFAULT_CONFIG: Config = {
 };
 
 function fail(message: string): never {
-  throw new Error(`[claude-notifier] invalid config: ${message}`);
+  throw new Error(`[claude-alerter] invalid config: ${message}`);
 }
 
 export function loadConfig(configPath: string): Config {

@@ -23,7 +23,7 @@ export function legacyRuntimeInstallDir(): string {
 }
 
 export function pidFilePath(): string {
-  return path.join(os.tmpdir(), "claude-notifier.pid");
+  return path.join(os.tmpdir(), "claude-alerter.pid");
 }
 
 export function hapticTriggerDir(): string {
