@@ -1,16 +1,16 @@
 {
-  "name": "claude-sound-notify",
+  "name": "claude-notifier",
   "version": "1.0.0",
-  "description": "Cross-platform sound notifier for Claude Code hooks: loops a sound until the terminal is focused.",
+  "description": "Cross-platform notifier for Claude Code hooks: sound and optional haptic alerts that repeat until the terminal is focused.",
   "license": "MIT",
   "author": "cyberash <cyberash-dev@yandex.com>",
-  "homepage": "https://github.com/cyberash-dev/claude-sound-notify#readme",
+  "homepage": "https://github.com/cyberash-dev/claude-notifier#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cyberash-dev/claude-sound-notify.git"
+    "url": "git+https://github.com/cyberash-dev/claude-notifier.git"
   },
   "bugs": {
-    "url": "https://github.com/cyberash-dev/claude-sound-notify/issues"
+    "url": "https://github.com/cyberash-dev/claude-notifier/issues"
   },
   "keywords": [
     "claude",
@@ -18,13 +18,14 @@
     "hooks",
     "notification",
     "sound",
+    "haptic",
     "notifier",
     "cli",
     "cross-platform"
   ],
   "type": "commonjs",
   "bin": {
-    "claude-sound-notify": "dist/src/cli.js"
+    "claude-notifier": "dist/src/cli.js"
   },
   "files": [
     "dist/",
@@ -36,6 +37,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "test": "tsc -p tsconfig.test.json && node --test \"dist/test/**/*.test.js\"",
     "gen-sounds": "tsc && node dist/tools/gen-sounds.js",
     "setup": "tsc && node dist/src/cli.js install",
     "prepare": "tsc"

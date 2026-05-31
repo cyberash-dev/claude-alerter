@@ -29,11 +29,15 @@ function buildCommand(subcommand: string): string {
 }
 
 function isOurCommand(command: string): boolean {
-  return command.includes("sound-notify") && command.includes("cli.js");
+  return command.includes("notifier") && command.includes("cli.js");
 }
 
 function isLegacyCommand(command: string): boolean {
-  return command.includes("notify-until-focused.sh") || command.includes("claude-notify-loop.pid");
+  return (
+    (command.includes("sound-notify") && command.includes("cli.js")) ||
+    command.includes("notify-until-focused.sh") ||
+    command.includes("claude-notify-loop.pid")
+  );
 }
 
 function shouldRemove(entry: HookEntry): boolean {

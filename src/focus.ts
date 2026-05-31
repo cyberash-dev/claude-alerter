@@ -1,4 +1,12 @@
 import { spawnSync } from "child_process";
+import { commandExists } from "./system";
+
+function isWayland(): boolean {
+  return (
+    (process.env.WAYLAND_DISPLAY ?? "").length > 0 ||
+    (process.env.XDG_SESSION_TYPE ?? "").toLowerCase() === "wayland"
+  );
+}
 
 function run(cmd: string, args: string[]): string | null {
   const result = spawnSync(cmd, args, { encoding: "utf8" });
@@ -35,10 +43,7 @@ export function frontmostName(): string | null {
     return run("powershell", ["-NoProfile", "-NonInteractive", "-Command", WIN_FOCUS_SCRIPT]);
   }
 
-  const isWayland: boolean =
-    (process.env.WAYLAND_DISPLAY ?? "").length > 0 ||
-    (process.env.XDG_SESSION_TYPE ?? "").toLowerCase() === "wayland";
-  if (isWayland) {
+  if (isWayland()) {
     return null;
   }
 
@@ -62,12 +67,29 @@ export function isTerminalFocused(terminals: string[]): boolean {
   return terminals.some((t) => haystack.includes(t.toLowerCase()));
 }
 
-export function focusDetectionAvailable(): boolean {
-  if (process.platform === "darwin" || process.platform === "win32") {
-    return true;
+export interface FocusStatus {
+  available: boolean;
+  reason: string;
+}
+
+export function describeFocus(): FocusStatus {
+  if (process.platform === "darwin") {
+    return { available: true, reason: "AppleScript (System Events)" };
   }
-  const isWayland: boolean =
-    (process.env.WAYLAND_DISPLAY ?? "").length > 0 ||
-    (process.env.XDG_SESSION_TYPE ?? "").toLowerCase() === "wayland";
-  return !isWayland;
+  if (process.platform === "win32") {
+    return { available: true, reason: "GetForegroundWindow (Win32)" };
+  }
+  if (isWayland()) {
+    return {
+      available: false,
+      reason: "Wayland: focus can't be read; relies on max_repeats + stop hook",
+    };
+  }
+  if (!commandExists("xdotool") || !commandExists("xprop")) {
+    return {
+      available: false,
+      reason: "X11: xdotool/xprop missing; relies on max_repeats + stop hook",
+    };
+  }
+  return { available: true, reason: "X11 (xdotool/xprop)" };
 }

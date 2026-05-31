@@ -15,11 +15,19 @@ export function settingsPath(): string {
 }
 
 export function runtimeInstallDir(): string {
+  return path.join(claudeDir(), "notifier");
+}
+
+export function legacyRuntimeInstallDir(): string {
   return path.join(claudeDir(), "sound-notify");
 }
 
 export function pidFilePath(): string {
-  return path.join(os.tmpdir(), "claude-sound-notify.pid");
+  return path.join(os.tmpdir(), "claude-notifier.pid");
+}
+
+export function hapticTriggerDir(): string {
+  return path.join(runtimeInstallDir(), "haptic");
 }
 
 export function localConfigPath(): string {
@@ -48,4 +56,8 @@ export function repoSoundsDir(): string {
 
 export function repoConfigExamplePath(): string {
   return path.join(repoRoot(), "config.example.json");
+}
+
+export function repoHapticPluginDir(): string {
+  return path.join(repoRoot(), "ClaudeHapticPlugin");
 }

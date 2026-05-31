@@ -6,6 +6,7 @@ export interface EventConfig {
   enabled: boolean;
   sound: string;
   interval?: number;
+  haptic?: boolean;
 }
 
 export interface Config {
@@ -42,7 +43,7 @@ export const DEFAULT_CONFIG: Config = {
 };
 
 function fail(message: string): never {
-  throw new Error(`[claude-sound-notify] invalid config: ${message}`);
+  throw new Error(`[claude-notifier] invalid config: ${message}`);
 }
 
 export function loadConfig(configPath: string): Config {
@@ -84,16 +85,23 @@ export function loadConfig(configPath: string): Config {
     if (typeof ev.enabled !== "boolean") {
       fail(`event "${name}".enabled must be a boolean`);
     }
-    if (typeof ev.sound !== "string" || ev.sound.length === 0) {
-      fail(`event "${name}".sound must be a non-empty string`);
+    if (typeof ev.sound !== "string") {
+      fail(`event "${name}".sound must be a string`);
     }
     if (ev.interval !== undefined && (typeof ev.interval !== "number" || ev.interval <= 0)) {
       fail(`event "${name}".interval must be a positive number when present`);
+    }
+    if (ev.haptic !== undefined && typeof ev.haptic !== "boolean") {
+      fail(`event "${name}".haptic must be a boolean when present`);
+    }
+    if (ev.enabled === true && ev.sound === "" && ev.haptic !== true) {
+      fail(`event "${name}" is enabled but has neither sound nor haptic`);
     }
     events[name] = {
       enabled: ev.enabled,
       sound: ev.sound,
       interval: ev.interval as number | undefined,
+      haptic: ev.haptic as boolean | undefined,
     };
   }
 

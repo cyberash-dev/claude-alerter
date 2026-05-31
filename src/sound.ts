@@ -1,13 +1,7 @@
 import { spawnSync } from "child_process";
+import { commandExists } from "./system";
 
 type Player = { cmd: string; args: (file: string) => string[] };
-
-function commandExists(cmd: string): boolean {
-  const probe = process.platform === "win32" ? "where" : "command";
-  const args = process.platform === "win32" ? [cmd] : ["-v", cmd];
-  const result = spawnSync(probe, args, { stdio: "ignore", shell: process.platform === "win32" });
-  return result.status === 0;
-}
 
 const LINUX_PLAYERS: Player[] = [
   { cmd: "paplay", args: (f) => [f] },
@@ -43,11 +37,18 @@ export function playSound(file: string): void {
   const player = pickLinuxPlayer();
   if (player === null) {
     process.stderr.write(
-      "[claude-sound-notify] no audio player found (tried paplay, aplay, ffplay, play)\n",
+      "[claude-notifier] no audio player found (tried paplay, aplay, ffplay, play)\n",
     );
     return;
   }
   spawnSync(player.cmd, player.args(file), { stdio: "ignore" });
+}
+
+export function audioPlayerAvailable(): boolean {
+  if (process.platform === "darwin" || process.platform === "win32") {
+    return true;
+  }
+  return pickLinuxPlayer() !== null;
 }
 
 export function describePlayer(): string {

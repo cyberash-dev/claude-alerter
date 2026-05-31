@@ -19,7 +19,7 @@
   "default_interval": 15,
   "max_repeats": 20,
   "events": {
-    "Stop": { "enabled": true, "sound": "done.wav", "interval": 15 },
-    "Notification": { "enabled": true, "sound": "question.wav", "interval": 15 }
+    "Stop": { "enabled": true, "sound": "done.wav", "interval": 15, "haptic": false },
+    "Notification": { "enabled": true, "sound": "question.wav", "interval": 15, "haptic": false }
   }
 }

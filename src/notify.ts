@@ -3,6 +3,7 @@ import * as fs from "fs";
 import { Config, EventConfig, eventInterval, loadInstalledConfig, resolveSoundPath } from "./config";
 import { isTerminalFocused } from "./focus";
 import { playSound } from "./sound";
+import { triggerHaptic } from "./haptic";
 import { cliEntryPath, pidFilePath } from "./paths";
 
 function sleep(ms: number): Promise<void> {
@@ -48,9 +49,20 @@ export function play(eventName: string): void {
     return;
   }
 
+  const hasSound = ev.sound !== "";
+
+  // One tactile pulse at event time, regardless of the focus/loop branch
+  // below. While away, the sound channel loops; haptic loops only when it is
+  // the sole channel (empty sound) — see loop().
+  if (ev.haptic === true) {
+    triggerHaptic(eventName);
+  }
+
   // Already at the terminal: a single play is enough, no loop.
   if (isTerminalFocused(config.terminals)) {
-    playSound(resolveSoundPath(ev.sound));
+    if (hasSound) {
+      playSound(resolveSoundPath(ev.sound));
+    }
     return;
   }
 
@@ -86,21 +98,38 @@ export async function loop(eventName: string): Promise<void> {
 
   fs.writeFileSync(pidFilePath(), String(process.pid));
 
-  const soundPath = resolveSoundPath(ev.sound);
   const intervalMs = eventInterval(config, eventName) * 1000;
   const maxRepeats = config.max_repeats;
 
   try {
-    let plays = 0;
-    while (true) {
-      playSound(soundPath);
-      plays += 1;
-      if (maxRepeats > 0 && plays >= maxRepeats) {
-        break;
+    if (ev.sound !== "") {
+      const soundPath = resolveSoundPath(ev.sound);
+      let plays = 0;
+      while (true) {
+        playSound(soundPath);
+        plays += 1;
+        if (maxRepeats > 0 && plays >= maxRepeats) {
+          break;
+        }
+        const focused = await waitOrFocus(intervalMs, config.terminals);
+        if (focused) {
+          break;
+        }
       }
-      const focused = await waitOrFocus(intervalMs, config.terminals);
-      if (focused) {
-        break;
+    } else {
+      // Haptic-only: the event-time pulse already fired in play(), so count it
+      // as the first and wait before each subsequent pulse.
+      let pulses = 1;
+      while (true) {
+        if (maxRepeats > 0 && pulses >= maxRepeats) {
+          break;
+        }
+        const focused = await waitOrFocus(intervalMs, config.terminals);
+        if (focused) {
+          break;
+        }
+        triggerHaptic(eventName);
+        pulses += 1;
       }
     }
   } finally {
@@ -112,7 +141,12 @@ export function test(eventName: string): void {
   const config = loadInstalledConfig();
   const ev: EventConfig | undefined = config.events[eventName];
   if (ev === undefined) {
-    throw new Error(`[claude-sound-notify] no event "${eventName}" in config`);
+    throw new Error(`[claude-notifier] no event "${eventName}" in config`);
   }
-  playSound(resolveSoundPath(ev.sound));
+  if (ev.haptic === true) {
+    triggerHaptic(eventName);
+  }
+  if (ev.sound !== "") {
+    playSound(resolveSoundPath(ev.sound));
+  }
 }

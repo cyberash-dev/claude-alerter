@@ -2,11 +2,12 @@
 import * as fs from "fs";
 import * as path from "path";
 import { loadConfig } from "./config";
-import { describePlayer } from "./sound";
-import { focusDetectionAvailable } from "./focus";
+import { collectDiagnostics, renderDiagnostics } from "./preflight";
+import { setupHaptic } from "./haptic-setup";
 import { loop, play, stop, test } from "./notify";
 import { removeOurHooks, syncSettings } from "./settings";
 import {
+  legacyRuntimeInstallDir,
   repoConfigExamplePath,
   repoDistSrcDir,
   repoSoundsDir,
@@ -16,15 +17,18 @@ import {
 interface Flags {
   dryRun: boolean;
   configPath: string | null;
+  logitechHaptic: boolean;
 }
 
 function parseFlags(args: string[]): { positional: string[]; flags: Flags } {
   const positional: string[] = [];
-  const flags: Flags = { dryRun: false, configPath: null };
+  const flags: Flags = { dryRun: false, configPath: null, logitechHaptic: false };
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     if (arg === "--dry-run") {
       flags.dryRun = true;
+    } else if (arg === "--logitech-haptic") {
+      flags.logitechHaptic = true;
     } else if (arg === "--config") {
       flags.configPath = args[i + 1] ?? null;
       i += 1;
@@ -33,6 +37,16 @@ function parseFlags(args: string[]): { positional: string[]; flags: Flags } {
     }
   }
   return { positional, flags };
+}
+
+// Carry a pre-rename install (~/.claude/sound-notify) over to the current dir
+// so the user keeps their config.json and sounds across the rename.
+function migrateLegacyRuntimeDir(): void {
+  const legacy = legacyRuntimeInstallDir();
+  const current = runtimeInstallDir();
+  if (legacy !== current && fs.existsSync(legacy) && !fs.existsSync(current)) {
+    fs.renameSync(legacy, current);
+  }
 }
 
 function copyRuntimeFiles(): void {
@@ -59,19 +73,56 @@ function ensureRuntimeConfig(flagConfig: string | null): string {
   return dest;
 }
 
+// Each install sets the per-event `haptic` field to match whether
+// --logitech-haptic was passed. Operates on raw JSON so unknown keys and the
+// rest of the user's config are preserved untouched; validation errors are left
+// to the subsequent loadConfig.
+function applyHapticFlag(configPath: string, enabled: boolean, dryRun: boolean): void {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  } catch {
+    return;
+  }
+  if (typeof parsed !== "object" || parsed === null) {
+    return;
+  }
+  const events = (parsed as Record<string, unknown>).events;
+  if (typeof events !== "object" || events === null) {
+    return;
+  }
+  for (const value of Object.values(events as Record<string, unknown>)) {
+    if (typeof value === "object" && value !== null) {
+      (value as Record<string, unknown>).haptic = enabled;
+    }
+  }
+  if (!dryRun) {
+    fs.writeFileSync(configPath, `${JSON.stringify(parsed, null, 2)}\n`);
+  }
+}
+
 function runInstall(flags: Flags): void {
+  if (!flags.dryRun) {
+    migrateLegacyRuntimeDir();
+  }
   copyRuntimeFiles();
   const configPath = ensureRuntimeConfig(flags.configPath);
+  applyHapticFlag(configPath, flags.logitechHaptic, flags.dryRun);
   const config = loadConfig(configPath);
   const result = syncSettings(config, flags.dryRun);
+
+  process.stdout.write(`${renderDiagnostics(collectDiagnostics())}\n`);
+  if (flags.logitechHaptic) {
+    setupHaptic(flags.dryRun);
+  } else {
+    process.stdout.write("Haptic: disabled\n");
+  }
 
   if (flags.dryRun) {
     return;
   }
   process.stdout.write(`Installed runtime to ${runtimeInstallDir()}\n`);
   process.stdout.write(`Config: ${configPath}\n`);
-  process.stdout.write(`Audio player: ${describePlayer()}\n`);
-  process.stdout.write(`Focus detection: ${focusDetectionAvailable() ? "yes" : "no (uses max_repeats + stop hook)"}\n`);
   process.stdout.write(`Enabled events: ${result.enabledEvents.join(", ") || "(none)"}\n`);
   if (result.backupFile !== null) {
     process.stdout.write(`Backed up settings to ${result.backupFile}\n`);
@@ -97,21 +148,32 @@ function runUninstall(flags: Flags): void {
     return;
   }
   fs.rmSync(runtimeInstallDir(), { recursive: true, force: true });
+  fs.rmSync(legacyRuntimeInstallDir(), { recursive: true, force: true });
   process.stdout.write("Removed hooks and runtime directory.\n");
   if (result.backupFile !== null) {
     process.stdout.write(`Backed up settings to ${result.backupFile}\n`);
   }
 }
 
+function runDoctor(): void {
+  const diagnostics = collectDiagnostics();
+  process.stdout.write(`${renderDiagnostics(diagnostics)}\n`);
+  if (!diagnostics.audioAvailable) {
+    process.exitCode = 1;
+  }
+}
+
 function usage(): void {
   process.stdout.write(
     [
-      "claude-sound-notify",
+      "claude-notifier",
       "",
       "Usage:",
-      "  cli install [--dry-run] [--config <path>]   copy runtime + merge hooks",
+      "  cli install [--dry-run] [--config <path>] [--logitech-haptic]",
+      "                                              copy runtime + merge hooks",
       "  cli apply   [--dry-run]                      re-sync hooks from config.json",
       "  cli uninstall [--dry-run]                    remove hooks + runtime dir",
+      "  cli doctor                                   check audio/focus deps per OS",
       "  cli test <Event>                             play an event's sound once",
       "  cli play <Event>                             (hook) start looping notifier",
       "  cli stop                                     (hook) stop the looping notifier",
@@ -133,6 +195,9 @@ function main(): void {
       return;
     case "uninstall":
       runUninstall(flags);
+      return;
+    case "doctor":
+      runDoctor();
       return;
     case "test": {
       const event = positional[1];

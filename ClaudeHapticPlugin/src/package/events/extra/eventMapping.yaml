@@ -1,0 +1,9 @@
+haptics:
+  wave:
+    DEFAULT: wave
+  happy_alert:
+    DEFAULT: happy_alert
+  knock:
+    DEFAULT: knock
+  ringing:
+    DEFAULT: ringing
