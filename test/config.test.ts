@@ -3,7 +3,7 @@ import * as assert from "node:assert/strict";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import { loadConfig, resolveSoundPath } from "../src/config";
+import { loadConfig, loadInstalledConfig, resolveSoundPath } from "../src/config";
 
 function writeTempConfig(content: string): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "csn-config-"));
@@ -104,9 +104,31 @@ test("resolveSoundPath returns an absolute path unchanged", () => {
   assert.equal(resolveSoundPath(absolute), absolute);
 });
 
-test("resolveSoundPath joins a bare name onto the bundled sounds dir", () => {
-  const resolved = resolveSoundPath("done.wav");
+test("resolveSoundPath joins a bare name onto the install-dir sounds", () => {
+  const claudeDir = fs.mkdtempSync(path.join(os.tmpdir(), "csn-claude-"));
+  process.env.CLAUDE_CONFIG_DIR = claudeDir;
 
-  assert.ok(path.isAbsolute(resolved));
-  assert.equal(path.basename(resolved), "done.wav");
+  try {
+    const resolved = resolveSoundPath("done.wav");
+
+    assert.equal(resolved, path.join(claudeDir, "notifier", "sounds", "done.wav"));
+  } finally {
+    delete process.env.CLAUDE_CONFIG_DIR;
+  }
+});
+
+test("loadInstalledConfig reads config from the install dir, not next to the binary", () => {
+  const claudeDir = fs.mkdtempSync(path.join(os.tmpdir(), "csn-claude-"));
+  const notifierDir = path.join(claudeDir, "notifier");
+  fs.mkdirSync(notifierDir, { recursive: true });
+  fs.writeFileSync(path.join(notifierDir, "config.json"), VALID);
+  process.env.CLAUDE_CONFIG_DIR = claudeDir;
+
+  try {
+    const config = loadInstalledConfig();
+
+    assert.equal(config.events.Stop.sound, "done.wav");
+  } finally {
+    delete process.env.CLAUDE_CONFIG_DIR;
+  }
 });

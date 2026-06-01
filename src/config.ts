@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { localConfigPath, localSoundsDir } from "./paths";
+import { runtimeConfigPath, runtimeSoundsDir } from "./paths";
 
 export interface EventConfig {
   enabled: boolean;
@@ -114,14 +114,14 @@ export function loadConfig(configPath: string): Config {
 }
 
 export function loadInstalledConfig(): Config {
-  return loadConfig(localConfigPath());
+  return loadConfig(runtimeConfigPath());
 }
 
 export function resolveSoundPath(soundValue: string): string {
   if (path.isAbsolute(soundValue)) {
     return soundValue;
   }
-  return path.join(localSoundsDir(), soundValue);
+  return path.join(runtimeSoundsDir(), soundValue);
 }
 
 export function eventInterval(config: Config, eventName: string): number {

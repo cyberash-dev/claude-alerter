@@ -30,12 +30,12 @@ export function hapticTriggerDir(): string {
   return path.join(runtimeInstallDir(), "haptic");
 }
 
-export function localConfigPath(): string {
-  return path.join(MODULE_DIR, "config.json");
+export function runtimeConfigPath(): string {
+  return path.join(runtimeInstallDir(), "config.json");
 }
 
-export function localSoundsDir(): string {
-  return path.join(MODULE_DIR, "sounds");
+export function runtimeSoundsDir(): string {
+  return path.join(runtimeInstallDir(), "sounds");
 }
 
 export function cliEntryPath(): string {
