@@ -1,6 +1,6 @@
 {
   "name": "claude-alerter",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Cross-platform notifier for Claude Code hooks: sound and optional haptic alerts that repeat until the terminal is focused.",
   "license": "MIT",
   "author": "cyberash <cyberash-dev@yandex.com>",
